@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hospital Onboarding – Jan Swasthya Seva</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body { font-family: Arial; background:#f4f6f8; padding:20px; }
+    .card { background:#fff; padding:20px; border-radius:8px; }
+    input, textarea {
+      width:100%; padding:10px; margin:10px 0;
+    }
+    button {
+      width:100%; padding:14px;
+      background:#007bff; color:#fff;
+      border:none; font-size:18px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Hospital Onboarding</h2>
+
+  <input id="hname" placeholder="Hospital Name *">
+  <input id="hcontact" placeholder="Hospital Contact Number *">
+  <textarea id="haddress" placeholder="Hospital Address *"></textarea>
+
+  <label>Hospital Logo (optional)</label>
+  <input type="file" id="hlogo" accept="image/*">
+
+  <button onclick="createLink()">Create My Discharge Page</button>
+
+  <div id="result" style="margin-top:20px;"></div>
+</div>
+
+<script>
+function createLink() {
+  if (!hname.value || !hcontact.value || !haddress.value) {
+    alert("Please fill all mandatory fields");
+    return;
+  }
+
+  const hid = "HSP" + Date.now(); // unique hospital ID
+
+  const link = `https://janswasthyaseva.github.io/jss-discharge/?hid=${hid}`;
+
+  // (Later this will be saved to backend)
+  result.innerHTML = `
+    <p><b>Your Discharge Page:</b></p>
+    <p><a href="${link}" target="_blank">${link}</a></p>
+    <p>Please bookmark this link.</p>
+  `;
+}
+</script>
+
+</body>
+</html>
