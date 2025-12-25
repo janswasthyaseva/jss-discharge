@@ -44,6 +44,17 @@ function createLink() {
 
   const hid = "HSP" + Date.now(); // unique hospital ID
 
+  fetch("https://script.google.com/macros/s/AKfycbx7pAEmPLIdimkEV5o0DqaCizPjMJ_RPhdGwXblwP8h_1FqihBUb5YacIvzXd", {
+    method: "POST",
+    body: JSON.stringify({
+      hid: hid,
+      name: hname.value,
+      contact: hcontact.value,
+      address: haddress.value,
+      logo: ""
+    })
+  });
+
   const link = `https://janswasthyaseva.github.io/jss-discharge/?hid=${hid}`;
 
   // (Later this will be saved to backend)
