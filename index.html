@@ -25,17 +25,19 @@
 
 <h2>Discharge Summary Generator</h2>
 
+<!-- Hospital Details -->
 <div class="section">
   <label>Hospital Name</label>
-  <input id="hospitalName" readonly>
+  <input id="hospitalName" readonly placeholder="Loading hospital name...">
 
   <label>Hospital Address</label>
-  <input id="hospitalAddress" readonly>
+  <input id="hospitalAddress" readonly placeholder="Loading hospital address...">
 
   <label>Hospital Contact</label>
-  <input id="hospitalContact" readonly>
+  <input id="hospitalContact" readonly placeholder="Loading hospital contact...">
 </div>
 
+<!-- Patient Details -->
 <div class="section">
   <h3>Patient Details</h3>
 
@@ -47,7 +49,10 @@
 
   <label>Gender *</label>
   <select id="gender">
-    <option value="">Select</option><option>Male</option><option>Female</option><option>Other</option>
+    <option value="">Select</option>
+    <option>Male</option>
+    <option>Female</option>
+    <option>Other</option>
   </select><div id="err_gender" class="error"></div>
 
   <label>Contact Number *</label>
@@ -61,6 +66,7 @@
   <img id="photoPreview">
 </div>
 
+<!-- Clinical Details -->
 <div class="section">
   <h3>Clinical Details</h3>
   <label>Diagnosis *</label>
@@ -68,6 +74,7 @@
   <div id="err_diagnosis" class="error"></div>
 </div>
 
+<!-- Treatment -->
 <div class="section">
   <h3>Treatment</h3>
   <label>Procedure (if any)</label>
@@ -81,6 +88,7 @@
   <textarea id="advice"></textarea>
 </div>
 
+<!-- Follow-up -->
 <div class="section">
   <h3>Follow-up</h3>
   <label>Follow-up Plan *</label>
@@ -88,7 +96,10 @@
 
   <label>Risk Level *</label>
   <select id="risk">
-    <option value="">Select</option><option>Low</option><option>Medium</option><option>High</option>
+    <option value="">Select</option>
+    <option>Low</option>
+    <option>Medium</option>
+    <option>High</option>
   </select><div id="err_risk" class="error"></div>
 </div>
 
@@ -97,43 +108,97 @@
 <script>
 const WEBAPP = "https://script.google.com/macros/s/AKfycbwLKKwKdgJWqaFGv69xiIcT7U0qlRN4BskJ6zUibaRvIMwNyxqzVbNlMNZ1z5LP4pyO/exec";
 
-/* Load hospital using hid */
+/* Load hospital with cache + timeout */
 async function loadHospital(){
   const hid = new URLSearchParams(window.location.search).get("hid");
   if(!hid) return;
-  const r = await fetch(WEBAPP+"?hid="+hid);
-  const d = await r.json();
-  if(d.name){
-    hospitalName.value=d.name;
-    hospitalAddress.value=d.address;
-    hospitalContact.value=d.contact;
+
+  // Immediate UI feedback
+  hospitalName.value = "Loading...";
+  hospitalAddress.value = "Loading...";
+  hospitalContact.value = "Loading...";
+
+  // Try cache first
+  const cacheKey = "hospital_" + hid;
+  const cached = localStorage.getItem(cacheKey);
+  if(cached){
+    const d = JSON.parse(cached);
+    hospitalName.value = d.name;
+    hospitalAddress.value = d.address;
+    hospitalContact.value = d.contact;
+    return;
+  }
+
+  // Fetch with timeout protection
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 6000); // 6s timeout
+
+    const r = await fetch(WEBAPP + "?hid=" + hid, { signal: controller.signal });
+    const d = await r.json();
+
+    if(d.name){
+      hospitalName.value = d.name;
+      hospitalAddress.value = d.address;
+      hospitalContact.value = d.contact;
+
+      // Cache hospital info
+      localStorage.setItem(cacheKey, JSON.stringify(d));
+    } else {
+      hospitalName.value = "Hospital not found";
+      hospitalAddress.value = "";
+      hospitalContact.value = "";
+    }
+  } catch (e) {
+    hospitalName.value = "Unable to load hospital";
+    hospitalAddress.value = "";
+    hospitalContact.value = "";
   }
 }
 window.onload = loadHospital;
 
 /* Photo preview */
-photo.onchange = ()=>{ if(photo.files[0]) photoPreview.src=URL.createObjectURL(photo.files[0]); };
+photo.onchange = () => {
+  if(photo.files[0]) {
+    photoPreview.src = URL.createObjectURL(photo.files[0]);
+  }
+};
 
 function submitForm(){
-  let ok=true;
-  function chk(id,err){
-    if(!document.getElementById(id).value.trim()){ document.getElementById(err).innerText="Required"; ok=false;}
-    else document.getElementById(err).innerText="";
+  let ok = true;
+  function chk(id, err){
+    if(!document.getElementById(id).value.trim()){
+      document.getElementById(err).innerText = "Required";
+      ok = false;
+    } else {
+      document.getElementById(err).innerText = "";
+    }
   }
-  chk("pname","err_pname"); chk("age","err_age"); chk("gender","err_gender");
-  chk("contact","err_contact"); chk("diagnosis","err_diagnosis");
-  chk("medicines","err_medicines"); chk("followup","err_followup"); chk("risk","err_risk");
+
+  chk("pname","err_pname");
+  chk("age","err_age");
+  chk("gender","err_gender");
+  chk("contact","err_contact");
+  chk("diagnosis","err_diagnosis");
+  chk("medicines","err_medicines");
+  chk("followup","err_followup");
+  chk("risk","err_risk");
+
   if(!ok) return;
 
-  if(procedure.value) procedure.value="post-"+procedure.value;
+  if(procedure.value){
+    procedure.value = "post-" + procedure.value;
+  }
+
   window.print();
 
-  setTimeout(()=>{
-    document.querySelectorAll("input,textarea,select").forEach(e=>{
-      if(!e.hasAttribute("readonly") && e.type!=="file") e.value="";
+  setTimeout(() => {
+    document.querySelectorAll("input,textarea,select").forEach(e => {
+      if(!e.hasAttribute("readonly") && e.type !== "file") e.value = "";
     });
-    photo.value=""; photoPreview.src="";
-  },1000);
+    photo.value = "";
+    photoPreview.src = "";
+  }, 1000);
 }
 </script>
 
