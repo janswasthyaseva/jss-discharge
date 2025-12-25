@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hospital Discharge Summary</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f8f9fa;
+    }
+
+    h2, h3 {
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 5px;
+    }
+
+    .section {
+      background: #fff;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #999;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    img {
+      max-width: 120px;
+      margin-top: 10px;
+      border-radius: 6px;
+    }
+
+    @media print {
+      button, .error {
+        display: none;
+      }
+      body {
+        background: #fff;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Discharge Summary Generator</h2>
+
+<!-- Hospital Header -->
+<div class="section">
+  <label>Hospital Name</label>
+  <input value="ABC HOSPITAL, CUTTACK" readonly>
+
+  <label>Hospital Address</label>
+  <input value="Cuttack, Odisha" readonly>
+
+  <label>Hospital Contact</label>
+  <input value="9XXXXXXXXX" readonly>
+</div>
+
+<!-- Patient Details -->
+<div class="section">
+  <h3>Patient Details</h3>
+
+  <label>Patient Name *</label>
+  <input id="pname">
+  <div id="err_pname" class="error"></div>
+
+  <label>Age *</label>
+  <input id="age" type="number">
+  <div id="err_age" class="error"></div>
+
+  <label>Gender *</label>
+  <select id="gender">
+    <option value="">Select</option>
+    <option>Male</option>
+    <option>Female</option>
+    <option>Other</option>
+  </select>
+  <div id="err_gender" class="error"></div>
+
+  <label>Contact Number *</label>
+  <input id="contact" type="tel">
+  <div id="err_contact" class="error"></div>
+
+  <label>Address</label>
+  <textarea id="address"></textarea>
+
+  <label>Patient Photo (optional)</label>
+  <input type="file" accept="image/*" id="photo">
+  <img id="photoPreview">
+</div>
+
+<!-- Clinical Details -->
+<div class="section">
+  <h3>Clinical Details</h3>
+
+  <label>Diagnosis *</label>
+  <textarea id="diagnosis"></textarea>
+  <div id="err_diagnosis" class="error"></div>
+</div>
+
+<!-- Treatment -->
+<div class="section">
+  <h3>Treatment</h3>
+
+  <label>Procedure (if any)</label>
+  <input id="procedure" placeholder="e.g. Hernia repair">
+
+  <label>Medicines *</label>
+  <textarea id="medicines"
+  placeholder="Format:
+Tab/Inj/Syp – Name – Strength – Route – Dose – Days"></textarea>
+  <div id="err_medicines" class="error"></div>
+
+  <label>Advice</label>
+  <textarea id="advice"></textarea>
+</div>
+
+<!-- Follow-up -->
+<div class="section">
+  <h3>Follow-up</h3>
+
+  <label>Follow-up Plan *</label>
+  <input id="followup">
+  <div id="err_followup" class="error"></div>
+
+  <label>Risk Level *</label>
+  <select id="risk">
+    <option value="">Select</option>
+    <option>Low</option>
+    <option>Medium</option>
+    <option>High</option>
+  </select>
+  <div id="err_risk" class="error"></div>
+</div>
+
+<button onclick="handleSubmit()">Generate Discharge PDF</button>
+
+<script>
+/* Photo preview */
+photo.onchange = () => {
+  const file = photo.files[0];
+  if (file) {
+    photoPreview.src = URL.createObjectURL(file);
+  }
+};
+
+/* Validation + PDF */
+function handleSubmit() {
+  let valid = true;
+
+  function check(id, errId) {
+    if (!document.getElementById(id).value.trim()) {
+      document.getElementById(errId).innerText = "This field is required";
+      valid = false;
+    } else {
+      document.getElementById(errId).innerText = "";
+    }
+  }
+
+  check("pname", "err_pname");
+  check("age", "err_age");
+  check("gender", "err_gender");
+  check("contact", "err_contact");
+  check("diagnosis", "err_diagnosis");
+  check("medicines", "err_medicines");
+  check("followup", "err_followup");
+  check("risk", "err_risk");
+
+  if (!valid) return;
+
+  let proc = procedure.value;
+  if (proc.trim() !== "") {
+    procedure.value = "post-" + proc;
+  }
+
+  window.print();
+
+  // Reset for next patient
+  setTimeout(() => {
+    document.querySelectorAll("textarea, input, select").forEach(el => {
+      if (!el.hasAttribute("readonly") && el.type !== "file") el.value = "";
+    });
+    photo.value = "";
+    photoPreview.src = "";
+  }, 1000);
+}
+</script>
+
+</body>
+</html>
