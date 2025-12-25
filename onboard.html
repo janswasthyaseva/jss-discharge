@@ -1,20 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hospital Onboarding – Jan Swasthya Seva</title>
+  <title>Hospital Onboarding</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    body { font-family: Arial; background:#f4f6f8; padding:20px; }
+    body { font-family:Arial; background:#f4f6f8; padding:20px; }
     .card { background:#fff; padding:20px; border-radius:8px; }
-    input, textarea {
-      width:100%; padding:10px; margin:10px 0;
-    }
-    button {
-      width:100%; padding:14px;
-      background:#007bff; color:#fff;
-      border:none; font-size:18px;
-    }
+    input,textarea { width:100%; padding:10px; margin:10px 0; }
+    button { width:100%; padding:14px; background:#007bff; color:#fff; border:none; font-size:18px; }
   </style>
 </head>
 
@@ -27,42 +21,32 @@
   <input id="hcontact" placeholder="Hospital Contact Number *">
   <textarea id="haddress" placeholder="Hospital Address *"></textarea>
 
-  <label>Hospital Logo (optional)</label>
-  <input type="file" id="hlogo" accept="image/*">
-
   <button onclick="createLink()">Create My Discharge Page</button>
 
   <div id="result" style="margin-top:20px;"></div>
 </div>
 
 <script>
-function createLink() {
-  if (!hname.value || !hcontact.value || !haddress.value) {
-    alert("Please fill all mandatory fields");
-    return;
+const WEBAPP = "https://script.google.com/macros/s/AKfycbzz2Jp8itXd3iZdsHGFlm4bVYyRM9cQuidkYDJR8I_v4bCMvXg4cVC5vd6zW9xULpKh/exec";
+
+function createLink(){
+  if(!hname.value||!hcontact.value||!haddress.value){
+    alert("Fill all mandatory fields"); return;
   }
+  const hid="HSP"+Date.now();
 
-  const hid = "HSP" + Date.now(); // unique hospital ID
-
-  fetch("https://script.google.com/macros/s/AKfycbx7pAEmPLIdimkEV5o0DqaCizPjMJ_RPhdGwXblwP8h_1FqihBUb5YacIvzXd", {
-    method: "POST",
-    body: JSON.stringify({
-      hid: hid,
-      name: hname.value,
-      contact: hcontact.value,
-      address: haddress.value,
-      logo: ""
+  fetch(WEBAPP,{
+    method:"POST",
+    body:JSON.stringify({
+      hid:hid,
+      name:hname.value,
+      contact:hcontact.value,
+      address:haddress.value
     })
   });
 
-  const link = `https://janswasthyaseva.github.io/jss-discharge/?hid=${hid}`;
-
-  // (Later this will be saved to backend)
-  result.innerHTML = `
-    <p><b>Your Discharge Page:</b></p>
-    <p><a href="${link}" target="_blank">${link}</a></p>
-    <p>Please bookmark this link.</p>
-  `;
+  const link="https://janswasthyaseva.github.io/jss-discharge/?hid="+hid;
+  result.innerHTML=`<b>Your Discharge Page:</b><br><a href="${link}" target="_blank">${link}</a><br><br>Please bookmark this link.`;
 }
 </script>
 
